@@ -10,6 +10,13 @@ services:
       - '5432:5432'
     volumes: 
       - db:/var/lib/postgresql/data
+    command: 
+      - bash 
+      - -c 
+      - |
+        apt-get update && apt-get install -y postgresql-14-partman && \
+        chmod a+r /usr/share/postgresql/14/extension/pg_partman* && \
+        docker-entrypoint.sh postgres
 volumes:
   db:
     driver: local
