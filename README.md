@@ -91,6 +91,11 @@ WHERE parent_table = 'public.sales_antarctica';
 
 ### Conclusions: 
 
+
+### Errors:
+
+![Why am I seeing this?](image.png)
+
 1. p_premake - can be left as 1 (default in partman is 4). This ensures that there will be a table one year head. The benefit of this is we dont have too many future tables and if a future year is inserted a table for it will be automatically be created.  
 
 
