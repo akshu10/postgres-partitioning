@@ -1,6 +1,6 @@
 -- 1. Create schema and install pg_partman (run as superuser)
-CREATE SCHEMA IF NOT EXISTS partman;  -- pg_partman's default schema
-CREATE EXTENSION IF NOT EXISTS pg_partman WITH SCHEMA partman;
+CREATE SCHEMA IF NOT EXISTS public;  -- pg_partman's default schema
+CREATE EXTENSION IF NOT EXISTS pg_partman WITH SCHEMA public;
 
 
 -- 2. Create parent table with primary key
@@ -9,7 +9,7 @@ CREATE TABLE public.sales_hybrid (
     region VARCHAR(50),
     sale_date DATE,
     amount DECIMAL(10,2),
-    PRIMARY KEY (id, region,sale_date)  -- Required for partitioned tables
+    PRIMARY KEY (id, region)  -- Required for partitioned tables
 ) PARTITION BY LIST (region);
 
 -- 3. Create default partition
@@ -22,23 +22,17 @@ FOR VALUES IN ('Antarctica')
 PARTITION BY RANGE (sale_date);
 
 -- 5. Configure pg_partman for YEARLY subpartitions
-SELECT partman.create_parent(
-    p_parent_table := 'public.sales_antarctica',
+SELECT create_parent(
+    p_parent_table := 'public.sales_antarctica',  -- Add schema name
     p_control := 'sale_date',
     p_interval := '1 year',
-    p_type := 'native',
+    p_type := 'range',
     p_premake := 3  -- Creates 3 future partitions by default
 );
 
--- 6. Force-create partitions for 2023 (since start date isn't specified)
--- Requires pg_partman v5+ for precise control
-CALL partman.create_partition_time(
-    'public.sales_antarctica',
-    '2023-01-01'::timestamptz
-);
 
 -- 7. Generate subpartitions
-CALL partman.run_maintenance('public.sales_antarctica');
+SELECT run_maintenance('public.sales_antarctica');
 
 -- 8. Insert test data
 INSERT INTO public.sales_hybrid (region, sale_date, amount) VALUES
@@ -60,3 +54,12 @@ SELECT
 FROM public.sales_hybrid 
 WHERE region = 'Antarctica' 
 ORDER BY sale_date;
+
+
+-- Reset Database 
+-- 11. Drop all partitions and parent table
+-- Note: This will remove all data in the partitions
+DROP TABLE IF EXISTS public.sales_hybrid CASCADE;
+DROP TABLE IF EXISTS public.sales_antarctica CASCADE;
+DROP TABLE IF EXISTS public.sales_default CASCADE;
+DROP SCHEMA IF EXISTS partman CASCADE;
