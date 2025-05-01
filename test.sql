@@ -63,3 +63,16 @@ DROP TABLE IF EXISTS public.sales_hybrid CASCADE;
 DROP TABLE IF EXISTS public.sales_antarctica CASCADE;
 DROP TABLE IF EXISTS public.sales_default CASCADE;
 DROP SCHEMA IF EXISTS partman CASCADE;
+
+-- 12. List all constraints
+SELECT 
+    table_schema,
+    table_name,
+    constraint_name,
+    constraint_type
+FROM 
+    information_schema.table_constraints
+WHERE 
+    table_name = 'sales_hybrid'
+ORDER BY 
+    constraint_name;
